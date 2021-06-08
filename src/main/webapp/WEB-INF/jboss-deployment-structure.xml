@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure>
+    <deployment>
+        <dependencies>
+            <module name="org.primefaces.10_0" meta-inf="export"/>
+            <module name="org.primefaces.serenity.2_0_1" meta-inf="export"/>
+            <module name="org.apache.poi.4_1_2"/>
+            <module name="org.apache.commons.lang3"/>
+            <module name="org.apache.commons.lang"/>
+            <module name="org.jboss.weld.core"/>
+            <module name="javaee.api"/>
+            <module name="org.apache.logging.log4j" meta-inf="export"/>
+            <module name="com.github.noraui.ojdbc8.12_2_0_1"/>
+            <module name="com.google.guava.29_0"/>
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure> 

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Программа для анализа библиотечных функций декодирования QR-кодов</title>
+    <f:facet name="first">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <link rel="shortcut icon" type="image/png" href="#{resource['images/message.png']}"/>
+    </f:facet>
+</h:head>
+
+<h:body>
+
+    <p:growl id="messages" showDetail="true"/>
+    <div class="ui-card ui-g-12 ui-fluid">
+        <div class="ui-g-12">
+            <h:form id="uploadForm">
+                <div class="ui-g-12">
+                    <p:fileUpload value="#{uploaderImage.file}"
+                                  mode="simple"
+                                  skinSimple="true"
+                                  auto="true"
+                                  process="@this"
+                                  update="messages uploadForm"
+                                  listener="#{uploaderImage.handleFileUpload}"/>
+                </div>
+                <div class="ui-g-12" style="padding-top: 10px">
+                    <p:graphicImage id="image"
+                                    rendered="#{printImage.haveImage}"
+                                    value="#{printImage.getImage()}"
+                                    stream="false"/>
+
+                    <p:graphicImage id="image1"
+                                    rendered="#{printImage.haveImage}"
+                                    value="#{printImage.getRotateImage(90)}"
+                                    stream="false"/>
+
+                    <p:graphicImage id="image2"
+                                    rendered="#{printImage.haveImage}"
+                                    value="#{printImage.getGauseImage()}"
+                                    stream="false"/>
+                    <p:graphicImage id="image3"
+                                    rendered="#{printImage.haveImage}"
+                                    value="#{printImage.getScaleImage()}"
+                                    stream="false"/>
+                    <p:commandButton id="analizeBtn"
+                                     style="padding-top: 10px"
+                                     value="Analize"
+                                     rendered="#{printImage.haveImage}"
+                                     actionListener="#{qrCodeZxing.readQR(image)}"
+                                     update="messages"/>
+                </div>
+            </h:form>
+        </div>
+    </div>
+
+
+
+</h:body>
+</html>
