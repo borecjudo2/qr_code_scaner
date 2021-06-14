@@ -1,6 +1,5 @@
 package by.judoka.qr.image;
 
-import by.judoka.qr.Image;
 import lombok.Getter;
 import lombok.Setter;
 import org.primefaces.model.DefaultStreamedContent;
@@ -28,9 +27,6 @@ public class PrintImage implements Serializable {
     @Inject
     private Image image;
 
-    @Inject
-    private ImageManipulation imageManipulation;
-
     public boolean isHaveImage(){
         return !image.isEmpty();
     }
@@ -43,17 +39,31 @@ public class PrintImage implements Serializable {
                 .build();
     }
 
-    public StreamedContent getRotateImage(int degree) {
-        return imageManipulation.rotate(degree);
+    public StreamedContent getRotateImage() {
+        return toImage(image.getDataRotate());
     }
 
-    public StreamedContent getGauseImage(){
-        return imageManipulation.getGause();
+    public StreamedContent getGaussianImage(){
+        return toImage(image.getDataGaussian());
     }
 
     public StreamedContent getScaleImage(){
-        return imageManipulation.scale();
+        return toImage(image.getDataPlus());
     }
 
+    public StreamedContent getDistortionPincushionImage(){
+        return toImage(image.getDataBarrelInverse());
+    }
+
+    public StreamedContent getDistortionBarrelImage(){
+        return toImage(image.getDataBarrel());
+    }
+
+    private StreamedContent toImage(byte[] bytes){
+        return DefaultStreamedContent.builder()
+                .contentType(this.image.getMimeType())
+                .stream(() -> new ByteArrayInputStream(bytes))
+                .build();
+    }
 
 }

@@ -1,6 +1,5 @@
 package by.judoka.qr.image;
 
-import by.judoka.qr.Image;
 import lombok.Getter;
 import lombok.Setter;
 import org.primefaces.event.FileUploadEvent;

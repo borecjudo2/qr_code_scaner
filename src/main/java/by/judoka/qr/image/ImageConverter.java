@@ -1,66 +1,63 @@
 package by.judoka.qr.image;
 
-import by.judoka.qr.Image;
-import lombok.Getter;
-import lombok.Setter;
+import by.judoka.qr.pojo.ConvertImage;
+import by.judoka.qr.rest.RestTemplate;
 import lombok.SneakyThrows;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 
-import javax.enterprise.context.RequestScoped;
 import javax.imageio.ImageIO;
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Base64;
 import java.util.stream.IntStream;
 
-/**
- * Created by
- *
- * @author: JUDOKA
- * Date: 6/7/2021
- */
+public class ImageConverter {
 
-@Getter
-@Setter
-@Named
-@RequestScoped
-public class ImageManipulation {
+    private final Image image;
 
-    @Inject
-    private Image image;
+    private final RestTemplate restTemplate = new RestTemplate();
 
-    public StreamedContent rotate(double degree){
-        BufferedImage newImage = image.toEmptyBufferedImage();
-        AffineTransform affineTransform = AffineTransform.getRotateInstance(Math.toRadians(degree), newImage.getWidth()/2.0, newImage.getHeight()/2.0);
-        BufferedImageOp op = new AffineTransformOp(affineTransform, AffineTransformOp.TYPE_BILINEAR);
-        op.filter(image.toBufferedImage(), newImage);
-        return getReturn(newImage);
+    public ImageConverter(Image image) {
+        this.image = image;
     }
 
     @SneakyThrows
-    private StreamedContent getReturn(BufferedImage image){
+    private byte[] getBytes(BufferedImage bufferedImage){
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", baos);
-        byte[] bytes = baos.toByteArray();
-        return DefaultStreamedContent.builder()
-                .contentType(this.image.getMimeType())
-                .stream(() -> new ByteArrayInputStream(bytes))
-                .build();
+        ImageIO.write(bufferedImage, "png", baos);
+        return baos.toByteArray();
     }
 
-    public StreamedContent getGause(){
+    public byte[] convertToRotate(int degree){
+        BufferedImage newImage = image.toEmptyBufferedImage();
+        AffineTransform affineTransform = AffineTransform.getRotateInstance(
+                Math.toRadians(degree),
+                newImage.getWidth()/2.0,
+                newImage.getHeight()/2.0);
+        BufferedImageOp op = new AffineTransformOp(affineTransform, AffineTransformOp.TYPE_BILINEAR);
+        op.filter(image.toBufferedImage(), newImage);
+        return getBytes(newImage);
+    }
+
+    public byte[] convertToPlus(){
+        BufferedImage before = image.toBufferedImage();
+        BufferedImage after = new BufferedImage(before.getWidth(), before.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        AffineTransform at = AffineTransform.getScaleInstance(2, 2);
+        AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+        after = scaleOp.filter(before, after);
+        return getBytes(after);
+    }
+
+    public byte[] convertToGaussian(){
         int[] filter = {1, 2, 1, 2, 4, 2, 1, 2, 1,1, 2, 1, 2, 4, 2, 1, 2, 1};
         int filterWidth = 18;
-        return getReturn(blur(image.toBufferedImage(), filter, filterWidth));
+        BufferedImage blurImg = blur(image.toBufferedImage(), filter, filterWidth);
+        return getBytes(blurImg);
     }
 
-    public BufferedImage blur(BufferedImage image, int[] filter, int filterWidth) {
+    private BufferedImage blur(BufferedImage image, int[] filter, int filterWidth) {
         if (filter.length % filterWidth != 0) {
             throw new IllegalArgumentException("filter contains a incomplete row");
         }
@@ -109,14 +106,17 @@ public class ImageManipulation {
         return result;
     }
 
-    public StreamedContent scale(){
-        BufferedImage before = image.toBufferedImage();
-        BufferedImage after = new BufferedImage(before.getWidth(), before.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        AffineTransform at = AffineTransform.getScaleInstance(1.2, 1.2);
-
-        AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-        after = scaleOp.filter(before, after);
-        return getReturn(after);
+    public byte[] convertToBarrel(){
+        ConvertImage convertImage = restTemplate.getBarrelImage(image);
+        return distort(convertImage);
     }
 
+    public byte[] convertToBarrelInverse(){
+        ConvertImage convertImage = restTemplate.getPincushionImage(image);
+        return distort(convertImage);
+    }
+
+    private byte[] distort(ConvertImage image){
+       return Base64.getDecoder().decode(image.getData());
+    }
 }
